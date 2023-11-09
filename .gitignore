@@ -161,4 +161,4 @@ cython_debug/
 
 data/*
 
-faster-whisper-medium/*
+model/*

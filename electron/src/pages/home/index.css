@@ -18,7 +18,10 @@ body {
     /* border-radius: 100%; */
     padding: 44px;
 }
-
+::-webkit-scrollbar {
+    width: 8px !important;
+    /* 宽度 */
+}
 .toolbar-wrapper {
     user-select: none;
 }

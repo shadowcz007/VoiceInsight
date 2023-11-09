@@ -1,11 +1,72 @@
-const { ipcMain, BrowserWindow, app, dialog } = require('electron')
+const { ipcMain, desktopCapturer, app, dialog } = require('electron')
 const path = require('path')
 // const sharp = require('sharp');
 const fs = require('fs-extra')
 const hash = require('object-hash')
+const { spawn } = require('child_process')
 import server from './server'
 
+// console.log('app::', path.join(__dirname, 'app/app.exe'))
+
+const pythonApp = path.join(__dirname, 'app/app.exe')
 const isMac = process.platform == 'darwin'
+
+let childProcess: any = null
+
+function runExeFile (win: any, exePath: string, args: any) {
+  childProcess = spawn(exePath, args)
+
+  childProcess.stdout.on('data', (data: any) => {
+    console.log(`stdout: ${data}`)
+    win?.webContents.executeJavaScript(`
+    window.postMessage({
+      cmd:'run-exe-file',
+      data:{info:"${encodeURI(`stdout: ${data}`)}"}
+    })
+    `)
+  })
+
+  childProcess.stderr.on('data', (data: any) => {
+    console.error(`stderr: ${data}`)
+    win?.webContents.executeJavaScript(`
+    window.postMessage({
+      cmd:'run-exe-file',
+      data:{info:"${encodeURI(`stdout: ${data}`)}"}
+    })
+    `)
+  })
+
+  childProcess.on('close', (code: any) => {
+    console.log(`child process exited with code ${code}`)
+    // win?.webContents.executeJavaScript(`
+    // window.postMessage({
+    //   cmd:'run-exe-file',
+    //   data:{info:${code}}
+    // })
+    // `)
+  })
+}
+
+function stopExeFile (win: any) {
+  if (childProcess) {
+    childProcess.kill()
+    win?.webContents.executeJavaScript(`
+    window.postMessage({
+      cmd:'run-exe-file',
+      data:{info:'exe file stopped'}
+    })
+    `)
+    console.log('exe file stopped')
+  } else {
+    win?.webContents.executeJavaScript(`
+    window.postMessage({
+      cmd:'run-exe-file',
+      data:{info:'No exe file running'}
+    })
+    `)
+    console.log('No exe file running')
+  }
+}
 
 function copyFile (sourcePath: any, destinationPath: any) {
   const sourceStream = fs.createReadStream(sourcePath)
@@ -41,6 +102,31 @@ function saveBase64Image (base64String: string, filePath: string) {
       console.log('Image saved successfully!')
     }
   })
+}
+
+const recordingSaved = (win: any, base64String: string) => {
+  const filePath = path.join(app.getPath('temp'), 'recorded_audio.mp3')
+  fs.writeFile(filePath, base64String, 'base64', (err:any) => {
+    if (err) {
+      console.error('Error saving recorded audio:', err);
+      win?.webContents.executeJavaScript(`
+      window.postMessage({
+        cmd:'recordingSaved',
+        data:'Error saving recorded audio'
+      })
+      `)
+    } else {
+      console.log('Recording saved:', filePath);
+      win?.webContents.executeJavaScript(`
+      window.postMessage({
+        cmd:'recordingSaved',
+        data:{filePath:'${encodeURI(filePath)}'}
+      })
+      `)
+    }
+  });
+
+ 
 }
 
 function saveJSON (data: any, filePath: string) {
@@ -109,6 +195,17 @@ const init = (mainWin: any) => {
       // BrowserWindow.getFocusedWindow()
 
       switch (cmd) {
+        case 'recordingSaved':
+          recordingSaved(win, data.base64)
+          return 1
+        case 'python-app':
+          if (data.close === true) {
+            stopExeFile(win)
+          } else {
+            stopExeFile(win)
+            runExeFile(win, pythonApp, ['port=' + data.port])
+          }
+          return
         case 'executeJavaScript':
           const { code } = data
           let res = await win?.webContents.executeJavaScript(code)
@@ -127,7 +224,6 @@ const init = (mainWin: any) => {
           } else {
             return server.stop()
           }
-
         case 'openDirectory':
           win.setAlwaysOnTop(false)
           const fp = dialog.showOpenDialogSync({

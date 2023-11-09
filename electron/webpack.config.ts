@@ -54,6 +54,7 @@ const main: Configuration = {
     new CopyPlugin({
       patterns: [
         { from: "build/dev-app-update.yml", to: "dev-app-update.yml" },
+        { from: "../dist/app", to: "app" },
       ],
     }),
   ],

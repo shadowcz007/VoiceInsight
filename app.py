@@ -162,8 +162,21 @@ async def root():
     return {"message": "Welcome to VoiceInsight API"}
 
 def run_web_service():
+    import sys
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=6678)
+    port = 6678
+
+    # Parse command line arguments
+    for arg in sys.argv[1:]:
+        if arg.startswith("port="):
+            port = int(arg.split("=")[1])
+
+    if port is not None:
+        print("Received port argument:", port)
+    else:
+        print("No port argument provided")
+
+    uvicorn.run(app, host="127.0.0.1", port=port)
 
 if __name__ == "__main__":
     run_web_service()

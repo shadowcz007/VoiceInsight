@@ -75,6 +75,22 @@ const electronHandler = {
       data: { code: code }
     })
   },
+  pythonApp: (close = false, port = 6678) => {
+    return ipcRenderer.invoke('main:handle', {
+      cmd: 'python-app',
+      data: {
+        close,
+        port
+      }
+    })
+  },
+  recordingSaved: (base64: string) => {
+    return ipcRenderer.invoke('main:handle', {
+      cmd: 'recordingSaved',
+      data: { base64 }
+    })
+  },
+
   server: (isStart: boolean, port: number, path: string, html: string) =>
     ipcRenderer.invoke('main:handle', {
       cmd: 'server',
@@ -96,14 +112,14 @@ const electronHandler = {
       data: { setAlwaysOnTop }
     })
   },
-  openDirectory:()=>{
+  openDirectory: () => {
     return ipcRenderer.invoke('main:handle', {
-      cmd: 'openDirectory' 
+      cmd: 'openDirectory'
     })
   },
-  openFile:()=>{
+  openFile: () => {
     return ipcRenderer.invoke('main:handle', {
-      cmd: 'openFile' 
+      cmd: 'openFile'
     })
   },
   closeApp: () => {
