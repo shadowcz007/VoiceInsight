@@ -1,0 +1,38 @@
+directories:
+  output: release
+  buildResources: build
+publish:
+  - provider: github
+    owner: shadowcz007
+    repo: voice-insight
+appId: com.lab.voice
+productName: voice
+artifactName: ${productName}-${version}-${platform}-${arch}.${ext}
+files:
+  - filter:
+      - dist/**/*
+extraMetadata:
+  main: dist/main.js
+extraResources:
+  - from: assets
+    to: assets
+asar: true
+npmRebuild: false
+compression: maximum
+win:
+  icon: assets/logo.png
+  verifyUpdateCodeSignature: false
+  target:
+    - nsis
+mac:
+  icon: assets/logo.png
+  target:
+    target: zip
+    arch:
+      - x64
+      - arm64
+  identity: null
+nsis:
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+electronVersion: 25.9.3

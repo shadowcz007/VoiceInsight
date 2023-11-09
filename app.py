@@ -38,6 +38,7 @@ def set_path(modelpath):
     if model_path:
         print('设置whisper模型路径',model_path)
         model = faster_whisper.WhisperModel(model_path)
+        return True
 
 # def select_file(fp):
 #     global file_path,file_label
@@ -151,10 +152,10 @@ async def transcribe(
 async def transcribe(
     modelpath:str = Body(...,embed=True),
     ):
-
+    result=False
     if modelpath:
-        set_path(modelpath)
-    return {"result":modelpath}
+        result=set_path(modelpath)
+    return {"result":result}
 
 @app.get("/")
 async def root():

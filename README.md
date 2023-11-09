@@ -15,6 +15,14 @@ uvicorn
 https://huggingface.co/guillaumekln
 
 
+## 调试
+python app.py
+
+cd electron
+npm run dev
+
+
+
 ### 如何打包？
-pyinstaller main.py --add-data "env\Lib\site-packages\faster_whisper\assets\silero_vad.onnx:faster_whisper/assets"
+pyinstaller app.py --add-data "env\Lib\site-packages\faster_whisper\assets\silero_vad.onnx:faster_whisper/assets"
 

@@ -19,7 +19,6 @@ const isDebug = !!process?.env.npm_lifecycle_script?.match('--DEV')
 
 export type Channels = 'ipc-plugins'
 
-
 const electronHandler = {
   ipcRenderer: {
     send (channel: Channels, args: unknown[]) {
@@ -43,7 +42,7 @@ const electronHandler = {
       return ipcRenderer.invoke(channel, args)
     }
   },
-  setIgnoreMouseEvents:(data:any)=>{
+  setIgnoreMouseEvents: (data: any) => {
     ipcRenderer.invoke('main:handle', {
       cmd: 'setIgnoreMouseEvents',
       data
@@ -95,6 +94,21 @@ const electronHandler = {
     return ipcRenderer.invoke('main:handle', {
       cmd: 'setAlwaysOnTop',
       data: { setAlwaysOnTop }
+    })
+  },
+  openDirectory:()=>{
+    return ipcRenderer.invoke('main:handle', {
+      cmd: 'openDirectory' 
+    })
+  },
+  openFile:()=>{
+    return ipcRenderer.invoke('main:handle', {
+      cmd: 'openFile' 
+    })
+  },
+  closeApp: () => {
+    return ipcRenderer.invoke('main:handle', {
+      cmd: 'app-close'
     })
   },
   global: (key: string, val: any) => {

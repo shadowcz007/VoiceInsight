@@ -2,8 +2,12 @@
 import { createRoot } from "react-dom/client";
 import React from "react";
 import { useEffect } from "react";
-import { Button, ConfigProvider, Space, message, Card, Spin, Progress } from 'antd';
-import { PlusOutlined, DashboardOutlined } from '@ant-design/icons';
+import { Button, ConfigProvider, Space, message, Card, Spin, Progress, Divider } from 'antd';
+
+import {
+    CloseOutlined, RedoOutlined
+} from '@ant-design/icons';
+
 const hash = require('object-hash');
 const { Meta } = Card;
 
@@ -13,15 +17,89 @@ import i18n from "i18next";
 import { rendererInit } from '../../i18n/config'
 rendererInit()
 
+const url = 'http://127.0.0.1:6678'
 
 declare const window: Window &
     typeof globalThis & {
         electron: any
     }
 
+    const _shortTitle = (t: string, len: number = 12) => {
+        return t ? t.slice(0, len) + (t.length > len ? '...' : '') : ''
+    }
+
 export const App = () => {
 
-    const [s, setS]: any = React.useState([]);
+    const [info, setInfo]: any = React.useState('');
+    const [modelpath, setModelpath]: any = React.useState('');
+    const [subtitle, setSubtitle]: any = React.useState('');
+
+    const _api = async () => {
+        setInfo('')
+        try {
+            let res = await fetch(url)
+            let data = await res.json()
+            // console.log(data)
+            if (data?.message) {
+                setInfo(data.message)
+            }
+        } catch (error) {
+            setInfo('')
+        }
+    }
+
+    const _setModel = async () => {
+
+        const mp = await window.electron.openDirectory()
+        if (mp) {
+            setModelpath('')
+            console.log(mp)
+            fetch(`${url}/setup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    modelpath: mp
+                })
+            })
+                .then(response => response.json())
+                .then(result => {
+                    console.log('POST request successful:', result);
+                    if (result.result) setModelpath(mp)
+                })
+                .catch(error => {
+                    console.error('Error sending POST request:', error);
+                });
+
+        }
+    }
+
+    const _transcribe = async () => {
+        const filepath = await window.electron.openFile()
+        if (filepath) {
+            setSubtitle('处理中')
+            console.log(filepath)
+            fetch(`${url}/transcribe`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filepath
+                })
+            })
+                .then(response => response.json())
+                .then(result => {
+                    console.log('POST request successful:', result);
+                    if (result.result) setSubtitle(result.result)
+                })
+                .catch(error => {
+                    console.error('Error sending POST request:', error);
+                });
+
+        }
+    }
 
     useEffect(() => {
         const fn = async (res: any) => {
@@ -45,8 +123,9 @@ export const App = () => {
         }
 
         window.addEventListener('message', fn);
+        window.addEventListener('mousemove', mousemoveFn);
 
-        window.addEventListener('mousemove', mousemoveFn)
+        _api();
 
         return () => {
             window.removeEventListener('message', fn);
@@ -68,7 +147,30 @@ export const App = () => {
                 },
             }}
         >
-            <>hello world</>
+            <Card
+                style={{
+                    position: 'fixed',
+                    height:'90vh',
+                    width:400,
+                    overflowY:'auto',
+                    overflowX:'hidden'
+                }}
+                extra={
+                    <Button onClick={() => window.electron.closeApp()}><CloseOutlined /></Button>
+                }
+            >
+                <>{info} <RedoOutlined onClick={_api} /></>
+
+                <Divider />
+                <Button onClick={() => _setModel()}>{modelpath ? _shortTitle(modelpath,24) : '配置模型'}</Button>
+                <Divider />
+                <Button onClick={() => _transcribe()}>打开音频/视频文件</Button>
+                <Divider />
+                {
+                    subtitle
+                }
+                
+            </Card>
         </ConfigProvider>
 
     );

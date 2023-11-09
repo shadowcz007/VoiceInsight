@@ -116,9 +116,10 @@ const init = (mainWin: any) => {
           return {
             result: res
           }
-
         case 'getFocusedWindow':
           return win
+        case 'app-close':
+          return win?.destroy()
         case 'server':
           const { isStart, port, path, html } = data
           if (isStart) {
@@ -126,6 +127,33 @@ const init = (mainWin: any) => {
           } else {
             return server.stop()
           }
+
+        case 'openDirectory':
+          win.setAlwaysOnTop(false)
+          const fp = dialog.showOpenDialogSync({
+            properties: ['openDirectory']
+          })
+
+          if (fp && fp.length > 0) {
+            return fp[0]
+          }
+
+          return null
+
+        case 'openFile':
+          win.setAlwaysOnTop(false)
+          const result = dialog.showOpenDialogSync({
+            properties: ['openFile'],
+            filters: [
+              { name: 'Media Files', extensions: ['mp3', 'mp4', 'wav', 'avi'] }
+            ]
+          })
+
+          if (result && result.length > 0) {
+            return result[0]
+          }
+
+          return null
 
         case 'read-file':
           //data._type
@@ -142,6 +170,7 @@ const init = (mainWin: any) => {
           return { data: traverseDirectory(p), filePath: p }
 
         case 'save-as':
+          win.setAlwaysOnTop(false)
           const {
             title,
             originFilePath,
@@ -193,6 +222,7 @@ const init = (mainWin: any) => {
 
           if (ignore) {
             win.setIgnoreMouseEvents(true, { forward: true })
+            win.setAlwaysOnTop(true)
           } else {
             win.setIgnoreMouseEvents(false)
           }
