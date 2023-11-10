@@ -1,0 +1,10 @@
+faster-whisper
+pyinstaller
+python-ffmpeg
+arrow
+transformers
+scipy
+optimum
+accelerate
+fastapi
+uvicorn

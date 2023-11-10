@@ -15,6 +15,9 @@ env/Scripts/python -s -m pip install optimum -i https://pypi.tuna.tsinghua.edu.c
 env/Scripts/python -s -m pip install accelerate -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 
+<!-- chatglm3 -->
+<!-- env/Scripts/python -s -m pip install xinference[ggml]>=0.4.3 -i https://pypi.tuna.tsinghua.edu.cn/simple -->
+
 <!-- pip install pytube -->
 fastapi
 uvicorn
