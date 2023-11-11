@@ -32,5 +32,4 @@ npm run dev
 
 
 ### 如何打包？
-pyinstaller app.py --add-data "env\Lib\site-packages\faster_whisper\assets\silero_vad.onnx:faster_whisper/assets"
-
+pyinstaller -F whisper.py --add-data "env\Lib\site-packages\faster_whisper\assets\silero_vad.onnx:faster_whisper/assets" --clean
